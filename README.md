@@ -15,6 +15,12 @@ Parse:
 from DICOMParser import DICOMParser
 dicom_file = '.dcm'
 parser = DICOMParser.create_parser(dicom_file) # Factory method selects subclass
+```
+```python
+>>> parser
+<DICOMParser.CIRRUS_HD_OCT_6000 object at 0x7a0527163c50>
+```
+```
 metadata = parser.parse()
 ```
 ```python
