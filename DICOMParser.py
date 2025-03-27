@@ -12,8 +12,7 @@ from pydicom.uid import UID
 from pydicom.uid import UID_dictionary
 from pathlib import Path
 
-# FOR OPVs - https://github.com/msaifee786/hvf_extraction_script.git
-# git clone https://github.com/msaifee786/hvf_extraction_script.git
+# OPVs
 from hvf_extraction_script.hvf_data.hvf_object import Hvf_Object
 from hvf_extraction_script.utilities.file_utils import File_Utils
 
