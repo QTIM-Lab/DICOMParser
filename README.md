@@ -33,3 +33,14 @@ Preview:
 parser.preview('path_to_output_preview')
 parser.preview('path_to_output_preview', write_dicom_header=True) # If in addition to preview best guess, you want entire DICOM at `path_to_output_preview`
 ```
+
+## DICOMParser scripts
+
+### preview.py
+
+```sh
+python preview.py \
+    --input_file file.dcm \
+    --output_folder path/to/output
+
+```

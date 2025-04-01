@@ -20,6 +20,7 @@ from hvf_extraction_script.utilities.file_utils import File_Utils
 import pymupdf  # PyMuPDF
 from PIL import Image
 
+from oct_converter.readers import Dicom
 
 
 OPHTHALMOLOGY_SOP_CLASSES = {
@@ -111,7 +112,7 @@ class DICOMParser:
 
     def parse(self):
         raise NotImplementedError("This should be implemented in a subclass.")
-    
+
     def preview(self, output_path):
         metadata = self.extract_common_metadata()
         with open(os.path.join(output_path, f"{metadata['SOP Instance']}.json"), "w") as file:
@@ -130,6 +131,23 @@ class DICOMParser:
             'SOP Class Description': OPHTHALMOLOGY_SOP_CLASSES[self.sop_class],
             "SOP Instance": self.sop_instance,
         }
+
+    @staticmethod
+    def get_bscan_images_from_pixel_array(pixel_arr):
+        bscan_count = pixel_arr.shape[0]
+        bscan_images = {}
+        for i in range(bscan_count):
+            bscan_image = Image.fromarray(pixel_arr[i, :, :])
+            bscan_images[f"bscan{i+1}"] = bscan_image
+
+        return bscan_images
+
+    @staticmethod
+    def save_bscan_images(meta, output_pth):
+        sop_path = os.path.join(output_pth, f"{meta['SOP Instance']}")
+        if not os.path.exists(sop_path): os.makedirs(sop_path) # make pdf (png) folder
+        for bscan in meta['bscan_images'].keys():
+            meta['bscan_images'][bscan].save(os.path.join(sop_path, f"{bscan}.png"))
 
 
 ### Begin Subclasses by manufacturermodelname ###
@@ -2085,3 +2103,29 @@ class Retina_Workplace(DICOMParser):
 # The String is from the ManufacturerModelName field in the DICOM file
 DICOMParser.register_parser("Retina Workplace", Retina_Workplace)
 
+
+class TopconIMAGEnetOCTParser(DICOMParser):
+    def parse(self):
+        metadata = self.extract_common_metadata()
+        # Get dicom into oct_converter format
+        file = Dicom(self.dicom_path)
+        # Extract OCT Volume
+        oct_volume = (
+            file.read_oct_volume()
+        )  # returns an OCT volume with additional metadata if available
+        # oct_volume.volume.shape is (n_slices, h, w)
+        # Get B Scan Images
+        bscan_imgs = self.get_bscan_images_from_pixel_array(oct_volume.volume)
+        # Set metadata
+        metadata['bscan_images'] = bscan_imgs
+
+        return metadata
+
+    def preview(self, output_path, write_dicom_header=False):
+        if write_dicom_header:
+            self._write_detailed_dicom_header_to_file(output_path)
+        metadata = self.parse()
+        # TODO: add logic to determine what to do
+        self.save_bscan_images(meta=metadata, output_pth=output_path)
+
+DICOMParser.register_parser("3DOCT-1Maestro2", TopconIMAGEnetOCTParser)
