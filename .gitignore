@@ -1,0 +1,12 @@
+# Ignore
+
+# Cache
+__pycache__/
+
+# Virtual environments
+venv*/
+
+examples/
+
+# requirements (use poetry)
+requirements.txt
