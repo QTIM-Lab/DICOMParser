@@ -12,7 +12,7 @@ poetry install --no-root
 
 Parse:
 ```python
-from DICOMParser import DICOMParser
+from dicomparser import DICOMParser
 dicom_file = '.dcm'
 parser = DICOMParser.create_parser(dicom_file) # Factory method selects subclass
 ```

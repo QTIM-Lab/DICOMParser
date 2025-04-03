@@ -1,4 +1,4 @@
-from DICOMParser import DICOMParser
+from dicomparser import DICOMParser
 import argparse
 
 
