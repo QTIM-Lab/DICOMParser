@@ -134,18 +134,55 @@ class DICOMParser:
 
     @staticmethod
     def get_bscan_images_from_pixel_array(pixel_arr):
-        bscan_count = pixel_arr.shape[0]
-        bscan_images = {}
+        """
+        Converts a 3D numpy array to a dictionary of PIL Image objects.
+
+        Parameters:
+        -----------
+        pixel_arr : numpy.ndarray
+            3D array with shape (n_scans, height, width)
+            First dimension represents individual B-scan slices
+
+        Returns:
+        --------
+        dict
+            Dictionary with keys "bscan{i+1}" and values as PIL Image objects
+            B-scans are numbered starting from 1 in the output keys
+        """
+        bscan_count = pixel_arr.shape[0]  # Get number of B-scans
+        bscan_images = {}  # Initialize empty dictionary
+
+        # Process each B-scan slice
         for i in range(bscan_count):
+            # Convert 2D array slice to PIL Image
             bscan_image = Image.fromarray(pixel_arr[i, :, :])
+
+            # Store in dictionary with 1-based indexing
             bscan_images[f"bscan{i+1}"] = bscan_image
 
         return bscan_images
 
     @staticmethod
     def save_bscan_images(meta, output_pth):
+        """
+        Saves B-scan images from the metadata dictionary to the specified output path.
+
+        Parameters:
+        -----------
+        meta : dict
+            Dictionary containing 'SOP Instance' ID and 'bscan_images' dictionary
+            'bscan_images' should contain PIL Image objects
+
+        output_pth : str
+            Base directory where images will be saved
+        """
+        # Create folder path using SOP Instance ID
         sop_path = os.path.join(output_pth, f"{meta['SOP Instance']}")
-        if not os.path.exists(sop_path): os.makedirs(sop_path) # make pdf (png) folder
+
+        # Create directory if it doesn't exist
+        if not os.path.exists(sop_path): os.makedirs(sop_path)
+
+        # Save each B-scan image as PNG
         for bscan in meta['bscan_images'].keys():
             meta['bscan_images'][bscan].save(os.path.join(sop_path, f"{bscan}.png"))
 
